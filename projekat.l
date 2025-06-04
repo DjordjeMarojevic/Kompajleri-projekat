@@ -1,59 +1,69 @@
 %{
-
     #include <string.h>
     #include <stdio.h>
     #include <stdlib.h>
     #include "parser.tab.h"
 
-
+    extern int yylineno;
 %}
 
 %%
 
 
-[ \t\r\n]+                     ;  // Ignore whitespace
-"//".*                        ;  // Ignore single-line comments
+[ \t\r]+                      { /* skip */ }
 
-"QUERY"                       {return QUERY;}
-"RESULT_OF_QUERY"             {return RESULT_OF_QUERY;}
-"EXEC"                        {return EXEC;}
-"IF"                          {return IF;}
-"BEGIN"                       {return TOKEN_BEGIN;}
-"END"                         {return END;}
-"FOR"                         {return FOR;}
-"IN"                          {return IN;}
-"EMPTY"                       {return EMPTY;}
-"NOT_EMPTY"                   {return NOT_EMPTY;}
-"URL_EXISTS"                  {return URL_EXISTS;}
+\n                              { yylineno++; }
 
-"++"                          {return UNION;}
-"--"                          {return DIFFERENCE;}
-"**"                          {return INTERSECTION;}
+"//".*                          { /* skip entire line */ }
 
-"|"                           {return OR;}
-"+"                           {return PLUS;}
-"-"                           {return MINUS;}
-"*"                           {return STAR;}
+"/*"([^*]|\*+[^*/])*\*+"*/"    { /* skip entire multi‐line block */ }
 
-"="                           {return ASSIGN;}
-";"                           {return SEMICOLON;}
-","                           {return COMMA;}
-":"                           {return COLON;}
+"QUERY"                         { return QUERY; }
+"RESULT_OF_QUERY"               { return RESULT_OF_QUERY; }
+"EXEC"                          { return EXEC; }
+"IF"                            { return IF; }
+"BEGIN"                         { return TOKEN_BEGIN; }
+"END"                           { return END; }
+"FOR"                           { return FOR; }
+"IN"                            { return IN; }
+"EMPTY"                         { return EMPTY; }
+"NOT_EMPTY"                     { return NOT_EMPTY; }
+"URL_EXISTS"                    { return URL_EXISTS; }
 
-"<"                           {return LANGLE;}
-">"                           {return RANGLE;}
-"["                           {return LBRACKET;}
-"]"                           {return RBRACKET;}
-"("                           {return LPAREN;}
-")"                           {return RPAREN;}
+"++"                            { return UNION; }
+"--"                            { return DIFFERENCE; }
+"**"                            { return INTERSECTION; }
 
-\"([^\"\\]|\\.)*\"            { yylval.str = strdup(yytext); return STRING; }
+"|"                             { return OR; }
+"+"                             { return PLUS; }
+"-"                             { return MINUS; }
+"*"                             { return STAR; }
 
-[a-zA-Z_][a-zA-Z0-9_]*        { yylval.str = strdup(yytext); return WORD; }
+"="                             { return ASSIGN; }
+";"                             { return SEMICOLON; }
+","                             { return COMMA; }
+":"                             { return COLON; }
 
-.                             { printf("Unknown character: %s\n", yytext); return UNKNOWN; }
+"<"                             { return LANGLE; }
+">"                             { return RANGLE; }
+"["                             { return LBRACKET; }
+"]"                             { return RBRACKET; }
+"("                             { return LPAREN; }
+")"                             { return RPAREN; }
+
+\"([^\"\\]|\\.)*\"              {
+                                    yylval.str = strdup(yytext);
+                                    return STRING;
+                                }
+
+[a-zA-Z_][a-zA-Z0-9_]*          {
+                                    yylval.str = strdup(yytext);
+                                    return WORD;
+                                }
+
+.                               { return UNKNOWN; }
 %%
 
-
-
-
+int yywrap(void) {
+    return 1;
+}

@@ -54,36 +54,36 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    QUERY = 258,                   /* QUERY  */
-    RESULT_OF_QUERY = 259,         /* RESULT_OF_QUERY  */
-    EXEC = 260,                    /* EXEC  */
-    IF = 261,                      /* IF  */
-    TOKEN_BEGIN = 262,             /* TOKEN_BEGIN  */
-    END = 263,                     /* END  */
-    FOR = 264,                     /* FOR  */
-    IN = 265,                      /* IN  */
-    EMPTY = 266,                   /* EMPTY  */
-    NOT_EMPTY = 267,               /* NOT_EMPTY  */
-    URL_EXISTS = 268,              /* URL_EXISTS  */
-    UNION = 269,                   /* UNION  */
-    DIFFERENCE = 270,              /* DIFFERENCE  */
-    INTERSECTION = 271,            /* INTERSECTION  */
-    OR = 272,                      /* OR  */
-    PLUS = 273,                    /* PLUS  */
-    MINUS = 274,                   /* MINUS  */
-    STAR = 275,                    /* STAR  */
-    ASSIGN = 276,                  /* ASSIGN  */
-    SEMICOLON = 277,               /* SEMICOLON  */
-    COMMA = 278,                   /* COMMA  */
-    COLON = 279,                   /* COLON  */
-    LANGLE = 280,                  /* LANGLE  */
-    RANGLE = 281,                  /* RANGLE  */
-    LBRACKET = 282,                /* LBRACKET  */
-    RBRACKET = 283,                /* RBRACKET  */
-    LPAREN = 284,                  /* LPAREN  */
-    RPAREN = 285,                  /* RPAREN  */
-    STRING = 286,                  /* STRING  */
-    WORD = 287,                    /* WORD  */
+    WORD = 258,                    /* WORD  */
+    STRING = 259,                  /* STRING  */
+    QUERY = 260,                   /* QUERY  */
+    RESULT_OF_QUERY = 261,         /* RESULT_OF_QUERY  */
+    EXEC = 262,                    /* EXEC  */
+    IF = 263,                      /* IF  */
+    TOKEN_BEGIN = 264,             /* TOKEN_BEGIN  */
+    END = 265,                     /* END  */
+    FOR = 266,                     /* FOR  */
+    IN = 267,                      /* IN  */
+    EMPTY = 268,                   /* EMPTY  */
+    NOT_EMPTY = 269,               /* NOT_EMPTY  */
+    URL_EXISTS = 270,              /* URL_EXISTS  */
+    UNION = 271,                   /* UNION  */
+    DIFFERENCE = 272,              /* DIFFERENCE  */
+    INTERSECTION = 273,            /* INTERSECTION  */
+    OR = 274,                      /* OR  */
+    PLUS = 275,                    /* PLUS  */
+    MINUS = 276,                   /* MINUS  */
+    STAR = 277,                    /* STAR  */
+    ASSIGN = 278,                  /* ASSIGN  */
+    SEMICOLON = 279,               /* SEMICOLON  */
+    COMMA = 280,                   /* COMMA  */
+    COLON = 281,                   /* COLON  */
+    LANGLE = 282,                  /* LANGLE  */
+    RANGLE = 283,                  /* RANGLE  */
+    LBRACKET = 284,                /* LBRACKET  */
+    RBRACKET = 285,                /* RBRACKET  */
+    LPAREN = 286,                  /* LPAREN  */
+    RPAREN = 287,                  /* RPAREN  */
     UNKNOWN = 288                  /* UNKNOWN  */
   };
   typedef enum yytokentype yytoken_kind_t;
@@ -93,12 +93,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 26 "parser.y"
+#line 12 "parser.y"
 
     char* str;
-    // Add more fields for AST nodes later
 
-#line 102 "parser.tab.h"
+#line 101 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
