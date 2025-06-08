@@ -5,8 +5,22 @@
 
     void yyerror(const char* msg);
     int yylex();
+    int postoji(char* id);
+    void dodaj_u_tabelu(char* id, int tip, char* value);
     extern int yylineno;
     extern char* yytext;
+    enum TipPromenljive { QUERY_TYPE = 0, RESULT_TYPE = 1 };
+
+    struct Promenljiva {
+    char* id;       // Variable/query name
+    int tip;        // Optional: e.g., 0 = query, 1 = result, etc.
+    char* value;    // Optional: string content or parsed result
+};
+
+    struct Promenljiva tabela_simbola[50];
+    int brPromjenljivih = 0;
+
+
 %}
 
 %union {
@@ -31,6 +45,7 @@
 %type <str> query
 %type <str> directive
 %type <str> operator
+%type <str> set_operator
 
 %start program
 
@@ -51,9 +66,16 @@ declarations:
 ;
 
 declaration:
-      QUERY query_name ASSIGN query SEMICOLON
-    | QUERY query_name ASSIGN list_of_queries SEMICOLON
-    | RESULT_OF_QUERY identifier SEMICOLON
+      QUERY query_name ASSIGN query SEMICOLON{
+
+        dodaj_u_tabelu($2, QUERY_TYPE, $4);
+      }
+    | QUERY query_name ASSIGN list_of_queries SEMICOLON{
+        dodaj_u_tabelu($2, QUERY_TYPE, strdup("LIST"));
+    }
+    | RESULT_OF_QUERY identifier SEMICOLON{
+        dodaj_u_tabelu($2, RESULT_TYPE, strdup(""));
+    }
 ;
 
 commands:
@@ -64,7 +86,9 @@ commands:
 command:
       EXEC query_name SEMICOLON
     | IF condition TOKEN_BEGIN commands END
-    | FOR identifier IN list_of_queries TOKEN_BEGIN commands END {}
+    | FOR identifier IN list_of_queries TOKEN_BEGIN commands END {
+        dodaj_u_tabelu($2, RESULT_TYPE, strdup(""));    
+    }
     | assign_command SEMICOLON
 ;
 
@@ -94,7 +118,6 @@ query:
         /* $2 is a <str> returned by terms */
         $$ = $2;
     }
-    | identifier {/* ako je identifier u tabeli simbola i identifier je query, onda je ovo ok, u suprotnom nije ok*/}
 ;
 
 terms:
@@ -157,9 +180,9 @@ operator:
 ;
 
 set_operator:
-      UNION         { /* “++” semantics, no $$ needed here */ }
-    | DIFFERENCE    { /* “--” semantics */ }
-    | INTERSECTION  { /* “**” semantics */ }
+      UNION         { $$ = strdup("++"); }
+    | DIFFERENCE    { $$ = strdup("--"); }
+    | INTERSECTION  { $$ = strdup("**"); }
 ;
 
 identifier:
@@ -190,10 +213,53 @@ void yyerror(const char* msg) {
     fprintf(stderr, "Syntax error at line %d near '%s': %s\n", yylineno, yytext, msg);
 }
 
+int postoji(char* id){
+    int i = 0;
+
+    for(i=0; i< brPromjenljivih; i++){
+        struct Promenljiva trenutno = tabela_simbola[i];
+        if(strcmp(trenutno.id,id) == 0){
+            return i;
+        }
+    }
+
+    return -1;
+}   
+
+void dodaj_u_tabelu(char* id, int tip, char* value) {
+    int idx = postoji(id);
+    if (idx != -1) {
+        tabela_simbola[idx].tip = tip;
+        if (tabela_simbola[idx].value)
+            free(tabela_simbola[idx].value);
+        tabela_simbola[idx].value = strdup(value);
+        return;
+    }
+
+    if (brPromjenljivih >= 50) {
+        fprintf(stderr, "Previše promenljivih!\n");
+        exit(1);
+    }
+
+    tabela_simbola[brPromjenljivih].id = strdup(id);
+    tabela_simbola[brPromjenljivih].tip = tip;
+    tabela_simbola[brPromjenljivih].value = strdup(value);
+    brPromjenljivih++;
+}
+
+void ispisi_tabelu() {
+    printf("\nTABELA PROMENLJIVIH:\n");
+    for (int i = 0; i < brPromjenljivih; i++) {
+        printf("  %s (tip %d): %s\n", tabela_simbola[i].id, tabela_simbola[i].tip, tabela_simbola[i].value);
+    }
+}
+
+
 int main(){
     int res = yyparse();
     if(res == 0) {
         printf("Ulaz je ispravan\n");
+        ispisi_tabelu();
     } else {
         printf("Ulaz nije ispravan\n");
     }
