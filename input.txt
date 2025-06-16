@@ -3,8 +3,8 @@ QUERY advanced = <filetype:pdf apple +fruit -tree >;
 RESULT_OF_QUERY temp;
 RESULT_OF_QUERY res;
 
+//  caocao
 
-FOR item IN [basic, advanced] BEGIN
-    temp = EXEC item;
-	res = res ++ item;
-END
+/*cass
+as sa*/
+temp = EXEC basic;

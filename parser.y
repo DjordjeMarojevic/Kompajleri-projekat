@@ -1,51 +1,47 @@
 %{
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include "cvor.h"
+#include "red.h"
 
-    void yyerror(const char* msg);
-    int yylex();
-    int postoji(char* id);
-    void dodaj_u_tabelu(char* id, int tip, char* value);
-    extern int yylineno;
-    extern char* yytext;
-    enum TipPromenljive { QUERY_TYPE = 0, RESULT_TYPE = 1 };
+void yyerror(const char* msg);
+int yylex();
+int postoji(char* id);
+void dodaj_u_tabelu(char* id, int tip, char* value);
+extern int yylineno;
+extern char* yytext;
+Cvor* korijen;
 
-    struct Promenljiva {
-    char* id;       // Variable/query name
-    int tip;        // Optional: e.g., 0 = query, 1 = result, etc.
-    char* value;    // Optional: string content or parsed result
+enum TipPromenljive { QUERY_TYPE = 0, RESULT_TYPE = 1 };
+
+struct Promenljiva {
+    char* id;
+    int tip;
+    char* value;
 };
 
-    struct Promenljiva tabela_simbola[50];
-    int brPromjenljivih = 0;
-
-
+struct Promenljiva tabela_simbola[50];
+int brPromjenljivih = 0;
 %}
 
 %union {
-    char* str;
+    struct Cvor* CvorPokazivac;
 }
 
-%token <str> WORD STRING
-%token QUERY RESULT_OF_QUERY EXEC IF TOKEN_BEGIN END FOR IN
-%token EMPTY NOT_EMPTY URL_EXISTS
-%token UNION DIFFERENCE INTERSECTION
-%token OR PLUS MINUS STAR
-%token ASSIGN SEMICOLON COMMA COLON
-%token LANGLE RANGLE LBRACKET RBRACKET LPAREN RPAREN
-%token UNKNOWN
+%token <CvorPokazivac> WORD STRING
+%token <CvorPokazivac> QUERY RESULT_OF_QUERY EXEC IF TOKEN_BEGIN END FOR IN
+%token <CvorPokazivac> EMPTY NOT_EMPTY URL_EXISTS
+%token <CvorPokazivac> UNION DIFFERENCE INTERSECTION
+%token <CvorPokazivac> OR PLUS MINUS STAR
+%token <CvorPokazivac> ASSIGN SEMICOLON COMMA COLON
+%token <CvorPokazivac> LANGLE RANGLE LBRACKET RBRACKET LPAREN RPAREN
+%token <CvorPokazivac> UNKNOWN
 
-%type <str> identifier
-%type <str> query_name
-%type <str> KEY VALUE
-%type <str> TERM
-%type <str> term
-%type <str> terms
-%type <str> query
-%type <str> directive
-%type <str> operator
-%type <str> set_operator
+%type <CvorPokazivac> identifier query_name KEY VALUE TERM term terms query directive operator set_operator assign_command
+%type <CvorPokazivac> declarations commands declaration command
+
 
 %start program
 
@@ -56,44 +52,71 @@
 program:
     declarations commands
     {
-        
+        dodajSina(korijen,$1);
+        dodajSina(korijen,$2);
     }
 ;
 
 declarations:
-      declaration
-    | declarations declaration
+      declaration {$$ = kreirajCvor("Declarations"); dodajSina($$,$1);}
+    | declarations declaration {$$ = $1; dodajSina($$,$2);}
 ;
 
 declaration:
-      QUERY query_name ASSIGN query SEMICOLON{
-
-        dodaj_u_tabelu($2, QUERY_TYPE, $4);
+      QUERY query_name ASSIGN query SEMICOLON
+      {
+          dodajSina($1,$2);
+          dodajSina($1,$3);
+          dodajSina($1,$4);
+          $$ = $1;
+          dodaj_u_tabelu($2->vrijednost, QUERY_TYPE, $4->vrijednost);
       }
-    | QUERY query_name ASSIGN list_of_queries SEMICOLON{
-        dodaj_u_tabelu($2, QUERY_TYPE, strdup("LIST"));
-    }
-    | RESULT_OF_QUERY identifier SEMICOLON{
-        dodaj_u_tabelu($2, RESULT_TYPE, strdup(""));
-    }
+    | QUERY query_name ASSIGN list_of_queries SEMICOLON
+      {
+          dodaj_u_tabelu($2->vrijednost, QUERY_TYPE, strdup("LIST"));
+      }
+    | RESULT_OF_QUERY identifier SEMICOLON
+      {
+          dodajSina($1,$2);
+          $$ = $1;
+          dodaj_u_tabelu($2->vrijednost, RESULT_TYPE, strdup(""));
+      }
 ;
 
 commands:
-      command
-    | commands command
+      command {$$ = kreirajCvor("Commands"); dodajSina($$,$1);}
+    | commands command {$$ = $1; dodajSina($1,$2);}
 ;
 
 command:
-      EXEC query_name SEMICOLON
-    | IF condition TOKEN_BEGIN commands END
-    | FOR identifier IN list_of_queries TOKEN_BEGIN commands END {
-        dodaj_u_tabelu($2, RESULT_TYPE, strdup(""));    
+      EXEC query_name SEMICOLON {
+        $$ = kreirajCvor("Command"); int len = strlen("EXEC ") + strlen($2->vrijednost) + 1;
+        char* tekst = (char*)malloc(len);
+        snprintf(tekst, len, "EXEC %s", $2->vrijednost);
+
+        Cvor* temp = kreirajCvor(tekst);
+        dodajSina($$,temp);
+        free(tekst); 
     }
+    | IF condition TOKEN_BEGIN commands END
+    | FOR identifier IN list_of_queries TOKEN_BEGIN commands END
+      {
+          dodaj_u_tabelu($2->vrijednost, RESULT_TYPE, strdup(""));
+      }
     | assign_command SEMICOLON
 ;
 
 assign_command:
-      identifier ASSIGN EXEC query_name
+      identifier ASSIGN EXEC query_name {
+        $$ = kreirajCvor("Command");
+        int len = strlen($1->vrijednost) + strlen(" = EXEC ") + strlen($4->vrijednost) + 1;
+        char* tekst = (char*)malloc(len);
+        snprintf(tekst, len, "%s = EXEC %s", $1->vrijednost, $4->vrijednost);
+
+        Cvor* temp = kreirajCvor(tekst);
+        dodajSina($$,temp);
+        free(tekst);
+    }
     | identifier ASSIGN identifier set_operator identifier
 ;
 
@@ -115,78 +138,91 @@ query_list:
 query:
     LANGLE terms RANGLE
     {
-        /* $2 is a <str> returned by terms */
         $$ = $2;
+    }
+    | query_name
+    {
+        if (postoji($1->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
+        $$ = kreirajCvor($1->vrijednost);
     }
 ;
 
 terms:
       term
-        { 
-            /* Single term */ 
-            $$ = $1; 
-        }
+      {
+          $$ = kreirajCvor($1->vrijednost);
+      }
     | terms term
-        {
-            /* Juxtaposition: higher precedence than OR
-               e.g. "<a b | c>" → "(a b) | c" */
-            char *buf = malloc(strlen($1) + strlen($2) + 2);
-            sprintf(buf, "%s %s", $1, $2);
-            $$ = buf;
-        }
+      {
+          int len = strlen($1->vrijednost) + strlen($2->vrijednost) + 2;
+          char* combined = (char*)malloc(len);
+          snprintf(combined, len, "%s %s", $1->vrijednost, $2->vrijednost);
+            //ostavljam prve tri linije
+
+          $$ = kreirajCvor(combined);
+          free(combined);
+      }
     | terms OR terms
-        {
-            /* OR is lower‐precedence */
-            char *buf = malloc(strlen($1) + strlen($3) + 4);
-            sprintf(buf, "%s | %s", $1, $3);
-            $$ = buf;
-        }
+      {
+          int len = strlen($1->vrijednost) + strlen($3->vrijednost) + 5;
+          char* combined = (char*)malloc(len);
+          snprintf(combined, len, "%s OR %s", $1->vrijednost, $3->vrijednost);
+            //ostavljam prve tri linije
+
+          $$ = kreirajCvor(combined);
+          free(combined);
+      }
 ;
 
 term:
       TERM
-        {
-            /* TERM token’s yylval.str (WORD or STRING) */
-            $$ = $1;
-        }
+      {
+          $$ = $1;
+      }
     | directive
-        {
-            /* directive already returned char* */
-            $$ = $1;
-        }
+      {
+          $$ = $1;
+      }
     | operator term
-        {
-            /* Unary operator, e.g. "+term" */
-            char *buf = malloc(strlen($1) + strlen($2) + 1);
-            sprintf(buf, "%s%s", $1, $2);
-            $$ = buf;
-        }
+      {
+          int len = strlen($1->vrijednost) + strlen($2->vrijednost) + 2;
+          char* combined = (char*)malloc(len);
+          snprintf(combined, len, "%s%s", $1->vrijednost, $2->vrijednost);
+          $$ = kreirajCvor(combined);
+      }
 ;
 
 directive:
     KEY COLON VALUE
     {
-        /* Build "KEY:VALUE" string */
-        char *buf = malloc(strlen($1) + strlen($3) + 2);
-        sprintf(buf, "%s:%s", $1, $3);
-        $$ = buf;
+        int len = strlen($1->vrijednost) + strlen($3->vrijednost) + 2;
+        char* combined = (char*)malloc(len + 1);
+        snprintf(combined, len + 1, "%s:%s", $1->vrijednost, $3->vrijednost);
+        $$ = kreirajCvor(combined);
+        free(combined);
     }
 ;
 
+//ne moram nista dolje
+
 operator:
-      PLUS     { $$ = strdup("+"); }
-    | MINUS    { $$ = strdup("-"); }
-    | STAR     { $$ = strdup("*"); }
+      PLUS     { $$ = $1;}
+    | MINUS    { $$ = $1;}
+    | STAR     { $$ = $1;}
 ;
 
 set_operator:
-      UNION         { $$ = strdup("++"); }
-    | DIFFERENCE    { $$ = strdup("--"); }
-    | INTERSECTION  { $$ = strdup("**"); }
+      UNION         { $$ = $1;}
+    | DIFFERENCE    { $$ = $1;}
+    | INTERSECTION  { $$ = $1;}
 ;
 
+
+
 identifier:
-    WORD { $$ = $1; printf("%s\n",$1);}
+    WORD { $$ = $1; }
 ;
 
 query_name:
@@ -213,25 +249,19 @@ void yyerror(const char* msg) {
     fprintf(stderr, "Syntax error at line %d near '%s': %s\n", yylineno, yytext, msg);
 }
 
-int postoji(char* id){
-    int i = 0;
-
-    for(i=0; i< brPromjenljivih; i++){
-        struct Promenljiva trenutno = tabela_simbola[i];
-        if(strcmp(trenutno.id,id) == 0){
+int postoji(char* id) {
+    for (int i = 0; i < brPromjenljivih; i++) {
+        if (strcmp(tabela_simbola[i].id, id) == 0)
             return i;
-        }
     }
-
     return -1;
-}   
+}
 
 void dodaj_u_tabelu(char* id, int tip, char* value) {
     int idx = postoji(id);
     if (idx != -1) {
         tabela_simbola[idx].tip = tip;
-        if (tabela_simbola[idx].value)
-            free(tabela_simbola[idx].value);
+        free(tabela_simbola[idx].value);
         tabela_simbola[idx].value = strdup(value);
         return;
     }
@@ -254,14 +284,58 @@ void ispisi_tabelu() {
     }
 }
 
-
-int main(){
+int main() {
+    korijen = kreirajCvor("Program");
     int res = yyparse();
-    if(res == 0) {
+    if (res == 0) {
         printf("Ulaz je ispravan\n");
         ispisi_tabelu();
     } else {
         printf("Ulaz nije ispravan\n");
     }
+
+    int cnt = 0;
+
+    bool kraj = false;
+
+
+    struct Red* red = malloc(sizeof(struct Red));
+    int nivo = 0;
+
+    inicijalizujRed(red);
+
+    dodajURed(red,korijen);
+
+    printf("Prvi nivo:\n");
+   
+
+    while(true) {
+        if(red->glava == 0) {
+            break;
+        }
+        struct Cvor* tmp = ukloniSPocetka(red);
+        
+        if(tmp->nivo > nivo) {
+            printf("\n\n%d-ti Nivo:",tmp->nivo+1);
+            printf("\n%s ",tmp->vrijednost);
+            nivo++;
+            
+        }
+        else {
+            printf("%s ",tmp->vrijednost);
+        }
+    
+
+
+        int cnt = 0;
+        while(cnt < tmp->broj_sinova) {
+            tmp->sinovi[cnt]->nivo = tmp->nivo + 1;
+            dodajURed(red,tmp->sinovi[cnt]);
+            cnt++;
+        }
+    }
+
+    printf("\n");
+
     return 0;
 }

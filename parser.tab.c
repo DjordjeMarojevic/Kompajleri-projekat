@@ -69,30 +69,33 @@
 /* First part of user prologue.  */
 #line 1 "parser.y"
 
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include "cvor.h"
+#include "red.h"
 
-    void yyerror(const char* msg);
-    int yylex();
-    int postoji(char* id);
-    void dodaj_u_tabelu(char* id, int tip, char* value);
-    extern int yylineno;
-    extern char* yytext;
-    enum TipPromenljive { QUERY_TYPE = 0, RESULT_TYPE = 1 };
+void yyerror(const char* msg);
+int yylex();
+int postoji(char* id);
+void dodaj_u_tabelu(char* id, int tip, char* value);
+extern int yylineno;
+extern char* yytext;
+Cvor* korijen;
 
-    struct Promenljiva {
-    char* id;       // Variable/query name
-    int tip;        // Optional: e.g., 0 = query, 1 = result, etc.
-    char* value;    // Optional: string content or parsed result
+enum TipPromenljive { QUERY_TYPE = 0, RESULT_TYPE = 1 };
+
+struct Promenljiva {
+    char* id;
+    int tip;
+    char* value;
 };
 
-    struct Promenljiva tabela_simbola[50];
-    int brPromjenljivih = 0;
+struct Promenljiva tabela_simbola[50];
+int brPromjenljivih = 0;
 
-
-
-#line 96 "parser.tab.c"
+#line 99 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -502,16 +505,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  10
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   104
+#define YYLAST   98
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  34
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  21
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  42
+#define YYNRULES  43
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  89
+#define YYNSTATES  90
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   288
@@ -563,11 +566,11 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    57,    57,    64,    65,    69,    73,    76,    82,    83,
-      87,    88,    89,    92,    96,    97,   101,   102,   103,   107,
-     111,   112,   116,   124,   129,   137,   147,   152,   157,   167,
-     177,   178,   179,   183,   184,   185,   189,   193,   197,   201,
-     202,   206,   207
+       0,    53,    53,    61,    62,    66,    74,    78,    87,    88,
+      92,   101,   102,   106,   110,   120,   124,   125,   126,   130,
+     134,   135,   139,   143,   153,   157,   165,   176,   180,   184,
+     194,   205,   206,   207,   211,   212,   213,   217,   221,   225,
+     229,   230,   234,   235
 };
 #endif
 
@@ -606,7 +609,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-39)
+#define YYTABLE_NINF (-40)
 
 #define yytable_value_is_error(Yyn) \
   0
@@ -615,15 +618,15 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-       4,    14,    24,    39,     8,   -43,   -43,    35,   -43,    37,
-     -43,    14,    27,    24,   -43,    61,   -43,    49,    47,    -9,
-     -43,    50,    44,    45,    48,    68,    66,   -43,   -43,    30,
-      26,    53,    57,    58,   -43,    24,    24,    24,    61,    54,
-      14,    34,    59,   -43,   -43,   -43,   -43,     3,   -43,   -43,
-      26,    60,   -43,    -4,   -43,   -43,   -43,    55,    56,    64,
-      46,    75,   -43,   -43,   -43,   -43,    24,    26,   -43,   -43,
-     -43,    63,    53,   -43,   -43,   -43,    86,   -43,    61,   -43,
-      26,   -43,   -43,   -43,   -43,    62,    52,   -43,   -43
+      55,     1,    21,    30,    11,   -43,   -43,    15,   -43,    10,
+     -43,     1,    34,    21,   -43,    18,   -43,    31,    19,     4,
+     -43,    38,    32,    33,    40,    64,    70,   -43,   -43,    20,
+      47,     5,    61,    62,   -43,   -43,    21,    21,    21,    18,
+      50,     1,    36,    63,   -43,   -43,   -43,   -43,    37,   -43,
+     -43,    47,    65,   -43,   -10,   -43,   -43,   -43,    56,    58,
+      68,    67,    78,   -43,   -43,   -43,   -43,    21,    47,   -43,
+     -43,   -43,     7,     5,   -43,   -43,   -43,    88,   -43,    18,
+     -43,    47,   -43,   -43,   -43,   -43,    66,    73,   -43,   -43
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -631,31 +634,31 @@ static const yytype_int8 yypact[] =
    means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,     0,     0,     0,     3,    37,     0,    36,     0,
+       0,     0,     0,     0,     0,     3,    38,     0,    37,     0,
        1,     0,     0,     0,     4,     2,     8,     0,     0,     0,
        7,     0,     0,     0,     0,     0,     0,     9,    13,     0,
-       0,     0,     0,     0,    10,     0,     0,     0,     0,     0,
-       0,     0,    41,    42,    30,    31,    32,     0,    23,    27,
-       0,     0,    26,     0,    20,     6,     5,     0,     0,     0,
-       0,     0,    14,    33,    34,    35,     0,     0,    22,    24,
-      28,     0,     0,    19,    16,    17,     0,    11,     0,    15,
-      25,    39,    40,    29,    21,     0,     0,    18,    12
+       0,     0,     0,     0,    23,    10,     0,     0,     0,     0,
+       0,     0,     0,    42,    43,    31,    32,    33,     0,    24,
+      28,     0,     0,    27,     0,    20,     6,     5,     0,     0,
+       0,     0,     0,    14,    34,    35,    36,     0,     0,    22,
+      25,    29,     0,     0,    19,    16,    17,     0,    11,     0,
+      15,    26,    40,    41,    30,    21,     0,     0,    18,    12
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -43,   -43,   -43,    87,   -34,   -15,   -43,   -43,    65,   -43,
-     -29,    25,   -42,   -43,   -43,   -43,    -1,    -8,   -43,   -43,
+     -43,   -43,   -43,    90,   -34,   -15,   -43,   -43,    57,   -43,
+     -29,    27,   -42,   -43,   -43,   -43,    -1,     2,   -43,   -43,
      -43
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     3,     4,     5,    15,    16,    17,    25,    32,    53,
-      33,    47,    48,    49,    50,    66,    18,     7,    51,    83,
-      52
+       0,     3,     4,     5,    15,    16,    17,    25,    32,    54,
+      33,    48,    49,    50,    51,    67,    18,    34,    52,    84,
+      53
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -663,32 +666,30 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      27,     9,    54,    21,    60,    69,    42,    43,    70,     1,
-       2,     8,    26,     1,     2,    11,    12,     6,    30,    13,
-      31,    72,    67,    44,    45,    46,    73,     8,    41,    42,
-      43,    68,    62,     8,    57,    58,    59,    40,    69,    10,
-      22,    23,    24,    84,    86,    27,    44,    45,    46,     8,
-      63,    64,    65,    11,    12,     8,    77,    13,    19,    11,
-      12,    20,    88,    13,     8,    79,    81,    82,    11,    12,
-      29,    27,    13,    28,    34,    35,    36,    38,    39,    37,
-      30,    55,    56,    31,    78,   -38,    71,    74,    75,    76,
-      85,    14,    80,     0,    87,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,    61
+      27,     9,    55,     7,     6,    61,    70,     6,     6,    71,
+      82,    83,    26,    21,     8,    73,     1,     2,    11,    12,
+      74,     8,    13,     8,     8,    11,    12,    41,    42,    13,
+      10,    30,    30,    31,    20,    58,    59,    60,    19,    70,
+      43,    44,    29,    63,    85,    87,    27,    22,    23,    24,
+      43,    44,    64,    65,    66,    28,    68,    45,    46,    47,
+       1,     2,    35,    36,    37,    69,    80,    45,    46,    47,
+       8,    38,    27,    39,    11,    12,     8,    78,    13,    31,
+      11,    12,    40,    89,    13,    56,    57,    79,    75,   -39,
+      76,    72,    86,    77,    14,    81,     0,    62,    88
 };
 
 static const yytype_int8 yycheck[] =
 {
-      15,     2,    31,    11,    38,    47,     3,     4,    50,     5,
-       6,     3,    13,     5,     6,     7,     8,     3,    27,    11,
-      29,    25,    19,    20,    21,    22,    30,     3,    29,     3,
-       4,    28,    40,     3,    35,    36,    37,     7,    80,     0,
-      13,    14,    15,    72,    78,    60,    20,    21,    22,     3,
-      16,    17,    18,     7,     8,     3,    10,    11,    23,     7,
-       8,    24,    10,    11,     3,    66,     3,     4,     7,     8,
-      23,    86,    11,    24,    24,    31,    31,     9,    12,    31,
-      27,    24,    24,    29,     9,    26,    26,    32,    32,    25,
-       4,     4,    67,    -1,    32,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    39
+      15,     2,    31,     1,     3,    39,    48,     3,     3,    51,
+       3,     4,    13,    11,     3,    25,     5,     6,     7,     8,
+      30,     3,    11,     3,     3,     7,     8,     7,    29,    11,
+       0,    27,    27,    29,    24,    36,    37,    38,    23,    81,
+       3,     4,    23,    41,    73,    79,    61,    13,    14,    15,
+       3,     4,    16,    17,    18,    24,    19,    20,    21,    22,
+       5,     6,    24,    31,    31,    28,    67,    20,    21,    22,
+       3,    31,    87,     9,     7,     8,     3,    10,    11,    29,
+       7,     8,    12,    10,    11,    24,    24,     9,    32,    26,
+      32,    26,     4,    25,     4,    68,    -1,    40,    32
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -698,12 +699,12 @@ static const yytype_int8 yystos[] =
        0,     5,     6,    35,    36,    37,     3,    51,     3,    50,
        0,     7,     8,    11,    37,    38,    39,    40,    50,    23,
       24,    51,    13,    14,    15,    41,    50,    39,    24,    23,
-      27,    29,    42,    44,    24,    31,    31,    31,     9,    12,
-       7,    50,     3,     4,    20,    21,    22,    45,    46,    47,
-      48,    52,    54,    43,    44,    24,    24,    50,    50,    50,
-      38,    42,    51,    16,    17,    18,    49,    19,    28,    46,
-      46,    26,    25,    30,    32,    32,    25,    10,     9,    50,
-      45,     3,     4,    53,    44,     4,    38,    32,    10
+      27,    29,    42,    44,    51,    24,    31,    31,    31,     9,
+      12,     7,    50,     3,     4,    20,    21,    22,    45,    46,
+      47,    48,    52,    54,    43,    44,    24,    24,    50,    50,
+      50,    38,    42,    51,    16,    17,    18,    49,    19,    28,
+      46,    46,    26,    25,    30,    32,    32,    25,    10,     9,
+      50,    45,     3,     4,    53,    44,     4,    38,    32,    10
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
@@ -711,9 +712,9 @@ static const yytype_int8 yyr1[] =
 {
        0,    34,    35,    36,    36,    37,    37,    37,    38,    38,
       39,    39,    39,    39,    40,    40,    41,    41,    41,    42,
-      43,    43,    44,    45,    45,    45,    46,    46,    46,    47,
-      48,    48,    48,    49,    49,    49,    50,    51,    52,    53,
-      53,    54,    54
+      43,    43,    44,    44,    45,    45,    45,    46,    46,    46,
+      47,    48,    48,    48,    49,    49,    49,    50,    51,    52,
+      53,    53,    54,    54
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -721,9 +722,9 @@ static const yytype_int8 yyr2[] =
 {
        0,     2,     2,     1,     2,     5,     5,     3,     1,     2,
        3,     5,     7,     2,     4,     5,     4,     4,     6,     3,
-       1,     3,     3,     1,     2,     3,     1,     1,     2,     3,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1
+       1,     3,     3,     1,     1,     2,     3,     1,     1,     2,
+       3,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1
 };
 
 
@@ -1187,207 +1188,275 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: declarations commands  */
-#line 58 "parser.y"
+#line 54 "parser.y"
     {
-        
+        dodajSina(korijen,(yyvsp[-1].CvorPokazivac));
+        dodajSina(korijen,(yyvsp[0].CvorPokazivac));
     }
-#line 1195 "parser.tab.c"
+#line 1197 "parser.tab.c"
+    break;
+
+  case 3: /* declarations: declaration  */
+#line 61 "parser.y"
+                  {(yyval.CvorPokazivac) = kreirajCvor("Declarations"); dodajSina((yyval.CvorPokazivac),(yyvsp[0].CvorPokazivac));}
+#line 1203 "parser.tab.c"
+    break;
+
+  case 4: /* declarations: declarations declaration  */
+#line 62 "parser.y"
+                               {(yyval.CvorPokazivac) = (yyvsp[-1].CvorPokazivac); dodajSina((yyval.CvorPokazivac),(yyvsp[0].CvorPokazivac));}
+#line 1209 "parser.tab.c"
     break;
 
   case 5: /* declaration: QUERY query_name ASSIGN query SEMICOLON  */
-#line 69 "parser.y"
-                                             {
-
-        dodaj_u_tabelu((yyvsp[-3].str), QUERY_TYPE, (yyvsp[-1].str));
+#line 67 "parser.y"
+      {
+          dodajSina((yyvsp[-4].CvorPokazivac),(yyvsp[-3].CvorPokazivac));
+          dodajSina((yyvsp[-4].CvorPokazivac),(yyvsp[-2].CvorPokazivac));
+          dodajSina((yyvsp[-4].CvorPokazivac),(yyvsp[-1].CvorPokazivac));
+          (yyval.CvorPokazivac) = (yyvsp[-4].CvorPokazivac);
+          dodaj_u_tabelu((yyvsp[-3].CvorPokazivac)->vrijednost, QUERY_TYPE, (yyvsp[-1].CvorPokazivac)->vrijednost);
       }
-#line 1204 "parser.tab.c"
+#line 1221 "parser.tab.c"
     break;
 
   case 6: /* declaration: QUERY query_name ASSIGN list_of_queries SEMICOLON  */
-#line 73 "parser.y"
-                                                       {
-        dodaj_u_tabelu((yyvsp[-3].str), QUERY_TYPE, strdup("LIST"));
-    }
-#line 1212 "parser.tab.c"
+#line 75 "parser.y"
+      {
+          dodaj_u_tabelu((yyvsp[-3].CvorPokazivac)->vrijednost, QUERY_TYPE, strdup("LIST"));
+      }
+#line 1229 "parser.tab.c"
     break;
 
   case 7: /* declaration: RESULT_OF_QUERY identifier SEMICOLON  */
-#line 76 "parser.y"
-                                          {
-        dodaj_u_tabelu((yyvsp[-1].str), RESULT_TYPE, strdup(""));
+#line 79 "parser.y"
+      {
+          dodajSina((yyvsp[-2].CvorPokazivac),(yyvsp[-1].CvorPokazivac));
+          (yyval.CvorPokazivac) = (yyvsp[-2].CvorPokazivac);
+          dodaj_u_tabelu((yyvsp[-1].CvorPokazivac)->vrijednost, RESULT_TYPE, strdup(""));
+      }
+#line 1239 "parser.tab.c"
+    break;
+
+  case 8: /* commands: command  */
+#line 87 "parser.y"
+              {(yyval.CvorPokazivac) = kreirajCvor("Commands"); dodajSina((yyval.CvorPokazivac),(yyvsp[0].CvorPokazivac));}
+#line 1245 "parser.tab.c"
+    break;
+
+  case 9: /* commands: commands command  */
+#line 88 "parser.y"
+                       {(yyval.CvorPokazivac) = (yyvsp[-1].CvorPokazivac); dodajSina((yyvsp[-1].CvorPokazivac),(yyvsp[0].CvorPokazivac));}
+#line 1251 "parser.tab.c"
+    break;
+
+  case 10: /* command: EXEC query_name SEMICOLON  */
+#line 92 "parser.y"
+                                {
+        (yyval.CvorPokazivac) = kreirajCvor("Command"); int len = strlen("EXEC ") + strlen((yyvsp[-1].CvorPokazivac)->vrijednost) + 1;
+        char* tekst = (char*)malloc(len);
+        snprintf(tekst, len, "EXEC %s", (yyvsp[-1].CvorPokazivac)->vrijednost);
+
+        Cvor* temp = kreirajCvor(tekst);
+        dodajSina((yyval.CvorPokazivac),temp);
+        free(tekst); 
     }
-#line 1220 "parser.tab.c"
+#line 1265 "parser.tab.c"
     break;
 
   case 12: /* command: FOR identifier IN list_of_queries TOKEN_BEGIN commands END  */
-#line 89 "parser.y"
-                                                                 {
-        dodaj_u_tabelu((yyvsp[-5].str), RESULT_TYPE, strdup(""));    
+#line 103 "parser.y"
+      {
+          dodaj_u_tabelu((yyvsp[-5].CvorPokazivac)->vrijednost, RESULT_TYPE, strdup(""));
+      }
+#line 1273 "parser.tab.c"
+    break;
+
+  case 14: /* assign_command: identifier ASSIGN EXEC query_name  */
+#line 110 "parser.y"
+                                        {
+        (yyval.CvorPokazivac) = kreirajCvor("Command");
+        int len = strlen((yyvsp[-3].CvorPokazivac)->vrijednost) + strlen(" = EXEC ") + strlen((yyvsp[0].CvorPokazivac)->vrijednost) + 1;
+        char* tekst = (char*)malloc(len);
+        snprintf(tekst, len, "%s = EXEC %s", (yyvsp[-3].CvorPokazivac)->vrijednost, (yyvsp[0].CvorPokazivac)->vrijednost);
+
+        Cvor* temp = kreirajCvor(tekst);
+        dodajSina((yyval.CvorPokazivac),temp);
+        free(tekst);
     }
-#line 1228 "parser.tab.c"
+#line 1288 "parser.tab.c"
     break;
 
   case 22: /* query: LANGLE terms RANGLE  */
-#line 117 "parser.y"
+#line 140 "parser.y"
     {
-        /* $2 is a <str> returned by terms */
-        (yyval.str) = (yyvsp[-1].str);
+        (yyval.CvorPokazivac) = (yyvsp[-1].CvorPokazivac);
     }
-#line 1237 "parser.tab.c"
+#line 1296 "parser.tab.c"
     break;
 
-  case 23: /* terms: term  */
-#line 125 "parser.y"
-        { 
-            /* Single term */ 
-            (yyval.str) = (yyvsp[0].str); 
-        }
-#line 1246 "parser.tab.c"
-    break;
-
-  case 24: /* terms: terms term  */
-#line 130 "parser.y"
-        {
-            /* Juxtaposition: higher precedence than OR
-               e.g. "<a b | c>" → "(a b) | c" */
-            char *buf = malloc(strlen((yyvsp[-1].str)) + strlen((yyvsp[0].str)) + 2);
-            sprintf(buf, "%s %s", (yyvsp[-1].str), (yyvsp[0].str));
-            (yyval.str) = buf;
-        }
-#line 1258 "parser.tab.c"
-    break;
-
-  case 25: /* terms: terms OR terms  */
-#line 138 "parser.y"
-        {
-            /* OR is lower‐precedence */
-            char *buf = malloc(strlen((yyvsp[-2].str)) + strlen((yyvsp[0].str)) + 4);
-            sprintf(buf, "%s | %s", (yyvsp[-2].str), (yyvsp[0].str));
-            (yyval.str) = buf;
-        }
-#line 1269 "parser.tab.c"
-    break;
-
-  case 26: /* term: TERM  */
-#line 148 "parser.y"
-        {
-            /* TERM token’s yylval.str (WORD or STRING) */
-            (yyval.str) = (yyvsp[0].str);
-        }
-#line 1278 "parser.tab.c"
-    break;
-
-  case 27: /* term: directive  */
-#line 153 "parser.y"
-        {
-            /* directive already returned char* */
-            (yyval.str) = (yyvsp[0].str);
-        }
-#line 1287 "parser.tab.c"
-    break;
-
-  case 28: /* term: operator term  */
-#line 158 "parser.y"
-        {
-            /* Unary operator, e.g. "+term" */
-            char *buf = malloc(strlen((yyvsp[-1].str)) + strlen((yyvsp[0].str)) + 1);
-            sprintf(buf, "%s%s", (yyvsp[-1].str), (yyvsp[0].str));
-            (yyval.str) = buf;
-        }
-#line 1298 "parser.tab.c"
-    break;
-
-  case 29: /* directive: KEY COLON VALUE  */
-#line 168 "parser.y"
+  case 23: /* query: query_name  */
+#line 144 "parser.y"
     {
-        /* Build "KEY:VALUE" string */
-        char *buf = malloc(strlen((yyvsp[-2].str)) + strlen((yyvsp[0].str)) + 2);
-        sprintf(buf, "%s:%s", (yyvsp[-2].str), (yyvsp[0].str));
-        (yyval.str) = buf;
+        if (postoji((yyvsp[0].CvorPokazivac)->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
+        (yyval.CvorPokazivac) = kreirajCvor((yyvsp[0].CvorPokazivac)->vrijednost);
     }
-#line 1309 "parser.tab.c"
+#line 1307 "parser.tab.c"
     break;
 
-  case 30: /* operator: PLUS  */
-#line 177 "parser.y"
-               { (yyval.str) = strdup("+"); }
+  case 24: /* terms: term  */
+#line 154 "parser.y"
+      {
+          (yyval.CvorPokazivac) = kreirajCvor((yyvsp[0].CvorPokazivac)->vrijednost);
+      }
 #line 1315 "parser.tab.c"
     break;
 
-  case 31: /* operator: MINUS  */
-#line 178 "parser.y"
-               { (yyval.str) = strdup("-"); }
-#line 1321 "parser.tab.c"
-    break;
-
-  case 32: /* operator: STAR  */
-#line 179 "parser.y"
-               { (yyval.str) = strdup("*"); }
+  case 25: /* terms: terms term  */
+#line 158 "parser.y"
+      {
+          int len = strlen((yyvsp[-1].CvorPokazivac)->vrijednost) + strlen((yyvsp[0].CvorPokazivac)->vrijednost) + 2;
+          char* combined = (char*)malloc(len);
+          snprintf(combined, len, "%s %s", (yyvsp[-1].CvorPokazivac)->vrijednost, (yyvsp[0].CvorPokazivac)->vrijednost);
+          (yyval.CvorPokazivac) = kreirajCvor(combined);
+          free(combined);
+      }
 #line 1327 "parser.tab.c"
     break;
 
-  case 33: /* set_operator: UNION  */
-#line 183 "parser.y"
-                    { (yyval.str) = strdup("++"); }
-#line 1333 "parser.tab.c"
-    break;
-
-  case 34: /* set_operator: DIFFERENCE  */
-#line 184 "parser.y"
-                    { (yyval.str) = strdup("--"); }
+  case 26: /* terms: terms OR terms  */
+#line 166 "parser.y"
+      {
+          int len = strlen((yyvsp[-2].CvorPokazivac)->vrijednost) + strlen((yyvsp[0].CvorPokazivac)->vrijednost) + 5;
+          char* combined = (char*)malloc(len);
+          snprintf(combined, len, "%s OR %s", (yyvsp[-2].CvorPokazivac)->vrijednost, (yyvsp[0].CvorPokazivac)->vrijednost);
+          (yyval.CvorPokazivac) = kreirajCvor(combined);
+          free(combined);
+      }
 #line 1339 "parser.tab.c"
     break;
 
-  case 35: /* set_operator: INTERSECTION  */
+  case 27: /* term: TERM  */
+#line 177 "parser.y"
+      {
+          (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);
+      }
+#line 1347 "parser.tab.c"
+    break;
+
+  case 28: /* term: directive  */
+#line 181 "parser.y"
+      {
+          (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);
+      }
+#line 1355 "parser.tab.c"
+    break;
+
+  case 29: /* term: operator term  */
 #line 185 "parser.y"
-                    { (yyval.str) = strdup("**"); }
-#line 1345 "parser.tab.c"
+      {
+          int len = strlen((yyvsp[-1].CvorPokazivac)->vrijednost) + strlen((yyvsp[0].CvorPokazivac)->vrijednost) + 2;
+          char* combined = (char*)malloc(len);
+          snprintf(combined, len, "%s%s", (yyvsp[-1].CvorPokazivac)->vrijednost, (yyvsp[0].CvorPokazivac)->vrijednost);
+          (yyval.CvorPokazivac) = kreirajCvor(combined);
+      }
+#line 1366 "parser.tab.c"
     break;
 
-  case 36: /* identifier: WORD  */
-#line 189 "parser.y"
-         { (yyval.str) = (yyvsp[0].str); printf("%s\n",(yyvsp[0].str));}
-#line 1351 "parser.tab.c"
+  case 30: /* directive: KEY COLON VALUE  */
+#line 195 "parser.y"
+    {
+        int len = strlen((yyvsp[-2].CvorPokazivac)->vrijednost) + strlen((yyvsp[0].CvorPokazivac)->vrijednost) + 2;
+        char* combined = (char*)malloc(len + 1);
+        snprintf(combined, len + 1, "%s:%s", (yyvsp[-2].CvorPokazivac)->vrijednost, (yyvsp[0].CvorPokazivac)->vrijednost);
+        (yyval.CvorPokazivac) = kreirajCvor(combined);
+        free(combined);
+    }
+#line 1378 "parser.tab.c"
     break;
 
-  case 37: /* query_name: WORD  */
-#line 193 "parser.y"
-         { (yyval.str) = (yyvsp[0].str); }
-#line 1357 "parser.tab.c"
+  case 31: /* operator: PLUS  */
+#line 205 "parser.y"
+               { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
+#line 1384 "parser.tab.c"
     break;
 
-  case 38: /* KEY: WORD  */
-#line 197 "parser.y"
-         { (yyval.str) = (yyvsp[0].str); }
-#line 1363 "parser.tab.c"
-    break;
-
-  case 39: /* VALUE: WORD  */
-#line 201 "parser.y"
-             { (yyval.str) = (yyvsp[0].str); }
-#line 1369 "parser.tab.c"
-    break;
-
-  case 40: /* VALUE: STRING  */
-#line 202 "parser.y"
-             { (yyval.str) = (yyvsp[0].str); }
-#line 1375 "parser.tab.c"
-    break;
-
-  case 41: /* TERM: WORD  */
+  case 32: /* operator: MINUS  */
 #line 206 "parser.y"
-             { (yyval.str) = (yyvsp[0].str); }
-#line 1381 "parser.tab.c"
+               { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
+#line 1390 "parser.tab.c"
     break;
 
-  case 42: /* TERM: STRING  */
+  case 33: /* operator: STAR  */
 #line 207 "parser.y"
-             { (yyval.str) = (yyvsp[0].str); }
-#line 1387 "parser.tab.c"
+               { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
+#line 1396 "parser.tab.c"
+    break;
+
+  case 34: /* set_operator: UNION  */
+#line 211 "parser.y"
+                    { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
+#line 1402 "parser.tab.c"
+    break;
+
+  case 35: /* set_operator: DIFFERENCE  */
+#line 212 "parser.y"
+                    { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
+#line 1408 "parser.tab.c"
+    break;
+
+  case 36: /* set_operator: INTERSECTION  */
+#line 213 "parser.y"
+                    { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
+#line 1414 "parser.tab.c"
+    break;
+
+  case 37: /* identifier: WORD  */
+#line 217 "parser.y"
+         { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
+#line 1420 "parser.tab.c"
+    break;
+
+  case 38: /* query_name: WORD  */
+#line 221 "parser.y"
+         { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
+#line 1426 "parser.tab.c"
+    break;
+
+  case 39: /* KEY: WORD  */
+#line 225 "parser.y"
+         { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
+#line 1432 "parser.tab.c"
+    break;
+
+  case 40: /* VALUE: WORD  */
+#line 229 "parser.y"
+             { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
+#line 1438 "parser.tab.c"
+    break;
+
+  case 41: /* VALUE: STRING  */
+#line 230 "parser.y"
+             { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
+#line 1444 "parser.tab.c"
+    break;
+
+  case 42: /* TERM: WORD  */
+#line 234 "parser.y"
+             { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
+#line 1450 "parser.tab.c"
+    break;
+
+  case 43: /* TERM: STRING  */
+#line 235 "parser.y"
+             { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
+#line 1456 "parser.tab.c"
     break;
 
 
-#line 1391 "parser.tab.c"
+#line 1460 "parser.tab.c"
 
       default: break;
     }
@@ -1580,32 +1649,26 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 210 "parser.y"
+#line 238 "parser.y"
 
 
 void yyerror(const char* msg) {
     fprintf(stderr, "Syntax error at line %d near '%s': %s\n", yylineno, yytext, msg);
 }
 
-int postoji(char* id){
-    int i = 0;
-
-    for(i=0; i< brPromjenljivih; i++){
-        struct Promenljiva trenutno = tabela_simbola[i];
-        if(strcmp(trenutno.id,id) == 0){
+int postoji(char* id) {
+    for (int i = 0; i < brPromjenljivih; i++) {
+        if (strcmp(tabela_simbola[i].id, id) == 0)
             return i;
-        }
     }
-
     return -1;
-}   
+}
 
 void dodaj_u_tabelu(char* id, int tip, char* value) {
     int idx = postoji(id);
     if (idx != -1) {
         tabela_simbola[idx].tip = tip;
-        if (tabela_simbola[idx].value)
-            free(tabela_simbola[idx].value);
+        free(tabela_simbola[idx].value);
         tabela_simbola[idx].value = strdup(value);
         return;
     }
@@ -1628,14 +1691,58 @@ void ispisi_tabelu() {
     }
 }
 
-
-int main(){
+int main() {
+    korijen = kreirajCvor("Program");
     int res = yyparse();
-    if(res == 0) {
+    if (res == 0) {
         printf("Ulaz je ispravan\n");
         ispisi_tabelu();
     } else {
         printf("Ulaz nije ispravan\n");
     }
+
+    int cnt = 0;
+
+    bool kraj = false;
+
+
+    struct Red* red = malloc(sizeof(struct Red));
+    int nivo = 0;
+
+    inicijalizujRed(red);
+
+    dodajURed(red,korijen);
+
+    printf("Prvi nivo:\n");
+   
+
+    while(true) {
+        if(red->glava == 0) {
+            break;
+        }
+        struct Cvor* tmp = ukloniSPocetka(red);
+        
+        if(tmp->nivo > nivo) {
+            printf("\n\n%d-ti Nivo:",tmp->nivo+1);
+            printf("\n%s ",tmp->vrijednost);
+            nivo++;
+            
+        }
+        else {
+            printf("%s ",tmp->vrijednost);
+        }
+    
+
+
+        int cnt = 0;
+        while(cnt < tmp->broj_sinova) {
+            tmp->sinovi[cnt]->nivo = tmp->nivo + 1;
+            dodajURed(red,tmp->sinovi[cnt]);
+            cnt++;
+        }
+    }
+
+    printf("\n");
+
     return 0;
 }

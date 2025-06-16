@@ -93,9 +93,9 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 26 "parser.y"
+#line 29 "parser.y"
 
-    char* str;
+    struct Cvor* CvorPokazivac;
 
 #line 101 "parser.tab.h"
 
