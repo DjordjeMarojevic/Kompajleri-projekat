@@ -40,7 +40,7 @@ int brPromjenljivih = 0;
 %token <CvorPokazivac> UNKNOWN
 
 %type <CvorPokazivac> identifier query_name KEY VALUE TERM term terms query directive operator set_operator assign_command
-%type <CvorPokazivac> declarations commands declaration command
+%type <CvorPokazivac> declarations commands declaration command query_list list_of_queries condition
 
 
 %start program
@@ -65,20 +65,47 @@ declarations:
 declaration:
       QUERY query_name ASSIGN query SEMICOLON
       {
-          dodajSina($1,$2);
-          dodajSina($1,$3);
+
+          int len = strlen("QueryDeclaration") + strlen($2->vrijednost) + 4;
+          char* tekst = (char*)malloc(len);
+          snprintf(tekst, len, "QueryDeclaration(%s)", $2->vrijednost);
+          
+          Cvor* temp = kreirajCvor(tekst);
+
+            
+          $$ = temp;
+          dodajSina(temp,$1);
           dodajSina($1,$4);
-          $$ = $1;
+           
+          
+          free(tekst);
+          
           dodaj_u_tabelu($2->vrijednost, QUERY_TYPE, $4->vrijednost);
       }
     | QUERY query_name ASSIGN list_of_queries SEMICOLON
       {
+          int len = strlen("QueryDeclaration") + strlen($2->vrijednost) + 4;
+          char* tekst = (char*)malloc(len);
+          snprintf(tekst, len, "QueryDeclaration(%s)", $2->vrijednost);
+          
+          Cvor* temp = kreirajCvor(tekst);
+
+
+          $$ = temp;
+          dodajSina(temp,$4);
+
           dodaj_u_tabelu($2->vrijednost, QUERY_TYPE, strdup("LIST"));
+
       }
     | RESULT_OF_QUERY identifier SEMICOLON
       {
-          dodajSina($1,$2);
-          $$ = $1;
+          int len = strlen("ResultOfQueryDeclaration") + strlen($2->vrijednost) + 4;
+          char* tekst = (char*)malloc(len);
+          snprintf(tekst, len, "ResultOfQueryDeclaration(%s)", $2->vrijednost);
+
+          Cvor* temp = kreirajCvor(tekst);
+
+          $$ = temp;
           dodaj_u_tabelu($2->vrijednost, RESULT_TYPE, strdup(""));
       }
 ;
@@ -90,17 +117,48 @@ commands:
 
 command:
       EXEC query_name SEMICOLON {
-        $$ = kreirajCvor("Command"); int len = strlen("EXEC ") + strlen($2->vrijednost) + 1;
+        int len = strlen("ExecCommand()") + strlen($2->vrijednost) + 2;
         char* tekst = (char*)malloc(len);
-        snprintf(tekst, len, "EXEC %s", $2->vrijednost);
+        snprintf(tekst, len, "ExecCommand(%s)", $2->vrijednost);
 
         Cvor* temp = kreirajCvor(tekst);
-        dodajSina($$,temp);
+        $$ = temp;
         free(tekst); 
     }
-    | IF condition TOKEN_BEGIN commands END
+    | IF condition TOKEN_BEGIN commands END{
+
+        /*int len = strlen("If(condition:)") + strlen($2->vrijednost) + 2;
+        char* tekst = (char*)malloc(len);
+        snprintf(tekst, len, "ForCommand(iteroator:%s)", $2->vrijednost);
+
+        Cvor* temp = kreirajCvor(tekst);*/
+
+        if($2 != NULL){
+            dodajSina($1,$2);
+            dodajSina($1,$4);
+        }
+
+        $$ = $1;
+
+    }
     | FOR identifier IN list_of_queries TOKEN_BEGIN commands END
       {
+          int len = strlen("ForCommand(iterator:)") + strlen($2->vrijednost) + 2;
+          char* tekst = (char*)malloc(len);
+          snprintf(tekst, len, "ForCommand(iteroator:%s)", $2->vrijednost);
+
+          Cvor* temp = kreirajCvor(tekst);
+
+          $$ = temp;
+          Cvor* iterable = kreirajCvor("iterable");
+          Cvor* body = kreirajCvor("Body");
+          dodajSina(temp,iterable);
+          dodajSina(body, $6);
+          dodajSina(temp,body);
+          
+          dodajSina(iterable,$4);  
+          
+
           dodaj_u_tabelu($2->vrijednost, RESULT_TYPE, strdup(""));
       }
     | assign_command SEMICOLON
@@ -108,31 +166,130 @@ command:
 
 assign_command:
       identifier ASSIGN EXEC query_name {
-        $$ = kreirajCvor("Command");
-        int len = strlen($1->vrijednost) + strlen(" = EXEC ") + strlen($4->vrijednost) + 1;
-        char* tekst = (char*)malloc(len);
-        snprintf(tekst, len, "%s = EXEC %s", $1->vrijednost, $4->vrijednost);
 
+
+
+        $$ = kreirajCvor("AsssignCommand");
+        
+        
+        int len = strlen($1->vrijednost) + strlen("Target:")+ 3;
+        char* tekst = (char*)malloc(len);
+        snprintf(tekst, len, "Target:%s", $1->vrijednost);
         Cvor* temp = kreirajCvor(tekst);
-        dodajSina($$,temp);
+        dodajSina($$,temp); 
         free(tekst);
+
+        
+        int len1 = strlen($4->vrijednost) + strlen("ExecCommand") + 4;
+        char* tekst1 = (char*)malloc(len1);
+        snprintf(tekst1, len1, "ExecCommand(%s)", $4->vrijednost);
+
+        Cvor* temp1 = kreirajCvor(tekst1);
+        dodajSina($$,temp1);
+        free(tekst1);
     }
-    | identifier ASSIGN identifier set_operator identifier
+    | identifier ASSIGN identifier set_operator identifier{
+
+        $$ = kreirajCvor("AsssignCommand");
+        int len = strlen($1->vrijednost) + strlen("Target:")+ 3;
+        char* tekst = (char*)malloc(len);
+        snprintf(tekst, len, "Target:%s", $1->vrijednost);
+        Cvor* temp = kreirajCvor(tekst);
+        dodajSina($$,temp); 
+        free(tekst);
+
+        int len1 = strlen($4->vrijednost) + strlen("SetOperation") + 4;
+        char* tekst1 = (char*)malloc(len1);
+        snprintf(tekst1, len1, "SetOperation(%s)", $4->vrijednost);
+
+        Cvor* temp1 = kreirajCvor(tekst1);
+        dodajSina($$,temp1);
+        free(tekst1);
+    }
 ;
 
 condition:
-      EMPTY LPAREN identifier RPAREN
-    | NOT_EMPTY LPAREN identifier RPAREN
-    | URL_EXISTS LPAREN identifier COMMA STRING RPAREN
+      EMPTY LPAREN identifier RPAREN{
+        
+        int len = strlen($1->vrijednost) + strlen($3->vrijednost)+4;
+        char* tekst = (char*)malloc(len);
+        snprintf(tekst, len, "%s(%s)", $1->vrijednost, $3->vrijednost);
+        Cvor* temp = kreirajCvor(tekst);
+        
+        if (postoji($3->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+            $$ = NULL;
+        }
+        else{
+            int id = postoji($3->vrijednost);
+            if (strcmp(tabela_simbola[id].value,"") == 0){
+                $$ = temp;
+            }
+            else{
+                $$ = NULL;
+            }
+        }
+        
+
+        free(tekst);
+        
+      }
+    | NOT_EMPTY LPAREN identifier RPAREN{
+        int len = strlen($1->vrijednost) + strlen($3->vrijednost)+ 4;
+        char* tekst = (char*)malloc(len);
+        snprintf(tekst, len, "%s(%s)", $1->vrijednost, $3->vrijednost);
+        Cvor* temp = kreirajCvor(tekst);
+        
+        if (postoji($3->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+            $$ = NULL;
+        }
+        else{
+            int id = postoji($3->vrijednost);
+            if (strcmp(tabela_simbola[id].value,"") == 0){
+                $$ = NULL;
+            }
+            else{
+                $$ = temp;
+            }
+        }
+
+        free(tekst);
+    }
+    | URL_EXISTS LPAREN identifier COMMA STRING RPAREN{
+
+        int len = strlen($1->vrijednost) + strlen($3->vrijednost)+ strlen($5->vrijednost)+ 4;
+        char* tekst = (char*)malloc(len);
+        snprintf(tekst, len, "%s(%s,%s)", $1->vrijednost, $3->vrijednost, $5->vrijednost);
+        Cvor* temp = kreirajCvor(tekst);
+
+        
+        
+        $$ = temp;
+
+        free(tekst);
+    }
 ;
 
 list_of_queries:
-    LBRACKET query_list RBRACKET
+    LBRACKET query_list RBRACKET{
+        $$ = $2;
+    }
 ;
 
 query_list:
-      query
-    | query_list COMMA query
+      query_name{
+        $$ = kreirajCvor($1->vrijednost);
+      }
+    | query_list COMMA query_name{
+        
+        int len = strlen($1->vrijednost) + strlen($3->vrijednost) + 5;
+        char* combined = (char*)malloc(len);
+        snprintf(combined, len, "[%s, %s]", $1->vrijednost, $3->vrijednost);
+
+        $$ = kreirajCvor(combined);
+        free(combined);
+    }
 ;
 
 query:
@@ -154,26 +311,19 @@ terms:
       {
           $$ = kreirajCvor($1->vrijednost);
       }
-    | terms term
-      {
-          int len = strlen($1->vrijednost) + strlen($2->vrijednost) + 2;
-          char* combined = (char*)malloc(len);
-          snprintf(combined, len, "%s %s", $1->vrijednost, $2->vrijednost);
-            //ostavljam prve tri linije
+    | terms term{
 
-          $$ = kreirajCvor(combined);
-          free(combined);
-      }
+        $$ = kreirajCvor("Juxtaposition");
+        dodajSina($$,$1);
+        dodajSina($$,$2);
+        
+}
     | terms OR terms
-      {
-          int len = strlen($1->vrijednost) + strlen($3->vrijednost) + 5;
-          char* combined = (char*)malloc(len);
-          snprintf(combined, len, "%s OR %s", $1->vrijednost, $3->vrijednost);
-            //ostavljam prve tri linije
-
-          $$ = kreirajCvor(combined);
-          free(combined);
-      }
+{
+        $$ = kreirajCvor("Or");
+        dodajSina($$, $1);  
+        dodajSina($$, $3);  
+}
 ;
 
 term:
@@ -197,9 +347,9 @@ term:
 directive:
     KEY COLON VALUE
     {
-        int len = strlen($1->vrijednost) + strlen($3->vrijednost) + 2;
+        int len = strlen("Directive") +  strlen($1->vrijednost) + strlen($3->vrijednost) + 4;
         char* combined = (char*)malloc(len + 1);
-        snprintf(combined, len + 1, "%s:%s", $1->vrijednost, $3->vrijednost);
+        snprintf(combined, len + 1, "Directive(%s:%s)", $1->vrijednost, $3->vrijednost);
         $$ = kreirajCvor(combined);
         free(combined);
     }
