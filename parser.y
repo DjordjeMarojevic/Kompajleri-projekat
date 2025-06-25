@@ -10,6 +10,7 @@ void yyerror(const char* msg);
 int yylex();
 int postoji(char* id);
 void dodaj_u_tabelu(char* id, int tip, char* value);
+void print_tree(Cvor* node, char *prefix, int is_last);
 extern int yylineno;
 extern char* yytext;
 Cvor* korijen;
@@ -167,7 +168,9 @@ command:
 assign_command:
       identifier ASSIGN EXEC query_name {
 
-
+        if (postoji($1->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
 
         $$ = kreirajCvor("AsssignCommand");
         
@@ -190,7 +193,16 @@ assign_command:
     }
     | identifier ASSIGN identifier set_operator identifier{
 
+        if (postoji($1->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
+        if (postoji($3->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
+        
+
         $$ = kreirajCvor("AsssignCommand");
+
         int len = strlen($1->vrijednost) + strlen("Target:")+ 3;
         char* tekst = (char*)malloc(len);
         snprintf(tekst, len, "Target:%s", $1->vrijednost);
@@ -198,9 +210,9 @@ assign_command:
         dodajSina($$,temp); 
         free(tekst);
 
-        int len1 = strlen($4->vrijednost) + strlen("SetOperation") + 4;
+        int len1 = strlen($3->vrijednost) + strlen($4->vrijednost) + strlen($5->vrijednost) + strlen("SetOperation") + 4;
         char* tekst1 = (char*)malloc(len1);
-        snprintf(tekst1, len1, "SetOperation(%s)", $4->vrijednost);
+        snprintf(tekst1, len1, "SetOperation(%s%s%s)", $3->vrijednost,$4->vrijednost, $5->vrijednost);
 
         Cvor* temp1 = kreirajCvor(tekst1);
         dodajSina($$,temp1);
@@ -210,6 +222,10 @@ assign_command:
 
 condition:
       EMPTY LPAREN identifier RPAREN{
+
+        if (postoji($3->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
         
         int len = strlen($1->vrijednost) + strlen($3->vrijednost)+4;
         char* tekst = (char*)malloc(len);
@@ -235,6 +251,11 @@ condition:
         
       }
     | NOT_EMPTY LPAREN identifier RPAREN{
+
+        if (postoji($3->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
+
         int len = strlen($1->vrijednost) + strlen($3->vrijednost)+ 4;
         char* tekst = (char*)malloc(len);
         snprintf(tekst, len, "%s(%s)", $1->vrijednost, $3->vrijednost);
@@ -258,13 +279,15 @@ condition:
     }
     | URL_EXISTS LPAREN identifier COMMA STRING RPAREN{
 
+        if (postoji($3->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
+
         int len = strlen($1->vrijednost) + strlen($3->vrijednost)+ strlen($5->vrijednost)+ 4;
         char* tekst = (char*)malloc(len);
         snprintf(tekst, len, "%s(%s,%s)", $1->vrijednost, $3->vrijednost, $5->vrijednost);
         Cvor* temp = kreirajCvor(tekst);
 
-        
-        
         $$ = temp;
 
         free(tekst);
@@ -279,6 +302,9 @@ list_of_queries:
 
 query_list:
       query_name{
+        if (postoji($1->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
         $$ = kreirajCvor($1->vrijednost);
       }
     | query_list COMMA query_name{
@@ -355,8 +381,6 @@ directive:
     }
 ;
 
-//ne moram nista dolje
-
 operator:
       PLUS     { $$ = $1;}
     | MINUS    { $$ = $1;}
@@ -397,6 +421,8 @@ TERM:
 
 void yyerror(const char* msg) {
     fprintf(stderr, "Syntax error at line %d near '%s': %s\n", yylineno, yytext, msg);
+    exit(1);
+    
 }
 
 int postoji(char* id) {
@@ -434,17 +460,31 @@ void ispisi_tabelu() {
     }
 }
 
+void print_tree(Cvor* node, char *prefix, int is_last) {
+    printf("%s%s%s\n", prefix, is_last ? "└─ " : "├─ ", node->vrijednost);
+
+    char new_prefix[1024];
+    snprintf(new_prefix, sizeof(new_prefix), "%s%s", prefix, is_last ? "    " : "│   ");
+
+    for (int i = 0; i < node->broj_sinova; i++) {
+        print_tree(node->sinovi[i], new_prefix, i == node->broj_sinova - 1);
+    }
+}
+
 int main() {
+
+    
     korijen = kreirajCvor("Program");
     int res = yyparse();
     if (res == 0) {
         printf("Ulaz je ispravan\n");
-        ispisi_tabelu();
     } else {
         printf("Ulaz nije ispravan\n");
     }
 
-    int cnt = 0;
+    print_tree(korijen, "",1);
+
+    /*int cnt = 0;
 
     bool kraj = false;
 
@@ -485,7 +525,7 @@ int main() {
         }
     }
 
-    printf("\n");
+    printf("\n");*/
 
     return 0;
 }

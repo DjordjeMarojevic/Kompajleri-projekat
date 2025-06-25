@@ -80,6 +80,7 @@ void yyerror(const char* msg);
 int yylex();
 int postoji(char* id);
 void dodaj_u_tabelu(char* id, int tip, char* value);
+void print_tree(Cvor* node, char *prefix, int is_last);
 extern int yylineno;
 extern char* yytext;
 Cvor* korijen;
@@ -95,7 +96,7 @@ struct Promenljiva {
 struct Promenljiva tabela_simbola[50];
 int brPromjenljivih = 0;
 
-#line 99 "parser.tab.c"
+#line 100 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -566,11 +567,11 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    53,    53,    61,    62,    66,    85,   100,   114,   115,
-     119,   128,   144,   164,   168,   191,   212,   237,   259,   273,
-     279,   282,   294,   298,   308,   312,   319,   328,   332,   336,
-     346,   359,   360,   361,   365,   366,   367,   373,   377,   381,
-     385,   386,   390,   391
+       0,    54,    54,    62,    63,    67,    86,   101,   115,   116,
+     120,   129,   145,   165,   169,   194,   224,   253,   280,   298,
+     304,   310,   322,   326,   336,   340,   347,   356,   360,   364,
+     374,   385,   386,   387,   391,   392,   393,   399,   403,   407,
+     411,   412,   416,   417
 };
 #endif
 
@@ -1188,28 +1189,28 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: declarations commands  */
-#line 54 "parser.y"
+#line 55 "parser.y"
     {
         dodajSina(korijen,(yyvsp[-1].CvorPokazivac));
         dodajSina(korijen,(yyvsp[0].CvorPokazivac));
     }
-#line 1197 "parser.tab.c"
+#line 1198 "parser.tab.c"
     break;
 
   case 3: /* declarations: declaration  */
-#line 61 "parser.y"
+#line 62 "parser.y"
                   {(yyval.CvorPokazivac) = kreirajCvor("Declarations"); dodajSina((yyval.CvorPokazivac),(yyvsp[0].CvorPokazivac));}
-#line 1203 "parser.tab.c"
+#line 1204 "parser.tab.c"
     break;
 
   case 4: /* declarations: declarations declaration  */
-#line 62 "parser.y"
+#line 63 "parser.y"
                                {(yyval.CvorPokazivac) = (yyvsp[-1].CvorPokazivac); dodajSina((yyval.CvorPokazivac),(yyvsp[0].CvorPokazivac));}
-#line 1209 "parser.tab.c"
+#line 1210 "parser.tab.c"
     break;
 
   case 5: /* declaration: QUERY query_name ASSIGN query SEMICOLON  */
-#line 67 "parser.y"
+#line 68 "parser.y"
       {
 
           int len = strlen("QueryDeclaration") + strlen((yyvsp[-3].CvorPokazivac)->vrijednost) + 4;
@@ -1228,11 +1229,11 @@ yyreduce:
           
           dodaj_u_tabelu((yyvsp[-3].CvorPokazivac)->vrijednost, QUERY_TYPE, (yyvsp[-1].CvorPokazivac)->vrijednost);
       }
-#line 1232 "parser.tab.c"
+#line 1233 "parser.tab.c"
     break;
 
   case 6: /* declaration: QUERY query_name ASSIGN list_of_queries SEMICOLON  */
-#line 86 "parser.y"
+#line 87 "parser.y"
       {
           int len = strlen("QueryDeclaration") + strlen((yyvsp[-3].CvorPokazivac)->vrijednost) + 4;
           char* tekst = (char*)malloc(len);
@@ -1247,11 +1248,11 @@ yyreduce:
           dodaj_u_tabelu((yyvsp[-3].CvorPokazivac)->vrijednost, QUERY_TYPE, strdup("LIST"));
 
       }
-#line 1251 "parser.tab.c"
+#line 1252 "parser.tab.c"
     break;
 
   case 7: /* declaration: RESULT_OF_QUERY identifier SEMICOLON  */
-#line 101 "parser.y"
+#line 102 "parser.y"
       {
           int len = strlen("ResultOfQueryDeclaration") + strlen((yyvsp[-1].CvorPokazivac)->vrijednost) + 4;
           char* tekst = (char*)malloc(len);
@@ -1262,23 +1263,23 @@ yyreduce:
           (yyval.CvorPokazivac) = temp;
           dodaj_u_tabelu((yyvsp[-1].CvorPokazivac)->vrijednost, RESULT_TYPE, strdup(""));
       }
-#line 1266 "parser.tab.c"
+#line 1267 "parser.tab.c"
     break;
 
   case 8: /* commands: command  */
-#line 114 "parser.y"
+#line 115 "parser.y"
               {(yyval.CvorPokazivac) = kreirajCvor("Commands"); dodajSina((yyval.CvorPokazivac),(yyvsp[0].CvorPokazivac));}
-#line 1272 "parser.tab.c"
+#line 1273 "parser.tab.c"
     break;
 
   case 9: /* commands: commands command  */
-#line 115 "parser.y"
+#line 116 "parser.y"
                        {(yyval.CvorPokazivac) = (yyvsp[-1].CvorPokazivac); dodajSina((yyvsp[-1].CvorPokazivac),(yyvsp[0].CvorPokazivac));}
-#line 1278 "parser.tab.c"
+#line 1279 "parser.tab.c"
     break;
 
   case 10: /* command: EXEC query_name SEMICOLON  */
-#line 119 "parser.y"
+#line 120 "parser.y"
                                 {
         int len = strlen("ExecCommand()") + strlen((yyvsp[-1].CvorPokazivac)->vrijednost) + 2;
         char* tekst = (char*)malloc(len);
@@ -1288,11 +1289,11 @@ yyreduce:
         (yyval.CvorPokazivac) = temp;
         free(tekst); 
     }
-#line 1292 "parser.tab.c"
+#line 1293 "parser.tab.c"
     break;
 
   case 11: /* command: IF condition TOKEN_BEGIN commands END  */
-#line 128 "parser.y"
+#line 129 "parser.y"
                                            {
 
         /*int len = strlen("If(condition:)") + strlen($2->vrijednost) + 2;
@@ -1309,11 +1310,11 @@ yyreduce:
         (yyval.CvorPokazivac) = (yyvsp[-4].CvorPokazivac);
 
     }
-#line 1313 "parser.tab.c"
+#line 1314 "parser.tab.c"
     break;
 
   case 12: /* command: FOR identifier IN list_of_queries TOKEN_BEGIN commands END  */
-#line 145 "parser.y"
+#line 146 "parser.y"
       {
           int len = strlen("ForCommand(iterator:)") + strlen((yyvsp[-5].CvorPokazivac)->vrijednost) + 2;
           char* tekst = (char*)malloc(len);
@@ -1333,14 +1334,16 @@ yyreduce:
 
           dodaj_u_tabelu((yyvsp[-5].CvorPokazivac)->vrijednost, RESULT_TYPE, strdup(""));
       }
-#line 1337 "parser.tab.c"
+#line 1338 "parser.tab.c"
     break;
 
   case 14: /* assign_command: identifier ASSIGN EXEC query_name  */
-#line 168 "parser.y"
+#line 169 "parser.y"
                                         {
 
-
+        if (postoji((yyvsp[-3].CvorPokazivac)->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
 
         (yyval.CvorPokazivac) = kreirajCvor("AsssignCommand");
         
@@ -1361,14 +1364,23 @@ yyreduce:
         dodajSina((yyval.CvorPokazivac),temp1);
         free(tekst1);
     }
-#line 1365 "parser.tab.c"
+#line 1368 "parser.tab.c"
     break;
 
   case 15: /* assign_command: identifier ASSIGN identifier set_operator identifier  */
-#line 191 "parser.y"
+#line 194 "parser.y"
                                                           {
 
+        if (postoji((yyvsp[-4].CvorPokazivac)->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
+        if (postoji((yyvsp[-2].CvorPokazivac)->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
+        
+
         (yyval.CvorPokazivac) = kreirajCvor("AsssignCommand");
+
         int len = strlen((yyvsp[-4].CvorPokazivac)->vrijednost) + strlen("Target:")+ 3;
         char* tekst = (char*)malloc(len);
         snprintf(tekst, len, "Target:%s", (yyvsp[-4].CvorPokazivac)->vrijednost);
@@ -1376,20 +1388,24 @@ yyreduce:
         dodajSina((yyval.CvorPokazivac),temp); 
         free(tekst);
 
-        int len1 = strlen((yyvsp[-1].CvorPokazivac)->vrijednost) + strlen("SetOperation") + 4;
+        int len1 = strlen((yyvsp[-2].CvorPokazivac)->vrijednost) + strlen((yyvsp[-1].CvorPokazivac)->vrijednost) + strlen((yyvsp[0].CvorPokazivac)->vrijednost) + strlen("SetOperation") + 4;
         char* tekst1 = (char*)malloc(len1);
-        snprintf(tekst1, len1, "SetOperation(%s)", (yyvsp[-1].CvorPokazivac)->vrijednost);
+        snprintf(tekst1, len1, "SetOperation(%s%s%s)", (yyvsp[-2].CvorPokazivac)->vrijednost,(yyvsp[-1].CvorPokazivac)->vrijednost, (yyvsp[0].CvorPokazivac)->vrijednost);
 
         Cvor* temp1 = kreirajCvor(tekst1);
         dodajSina((yyval.CvorPokazivac),temp1);
         free(tekst1);
     }
-#line 1388 "parser.tab.c"
+#line 1400 "parser.tab.c"
     break;
 
   case 16: /* condition: EMPTY LPAREN identifier RPAREN  */
-#line 212 "parser.y"
+#line 224 "parser.y"
                                     {
+
+        if (postoji((yyvsp[-1].CvorPokazivac)->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
         
         int len = strlen((yyvsp[-3].CvorPokazivac)->vrijednost) + strlen((yyvsp[-1].CvorPokazivac)->vrijednost)+4;
         char* tekst = (char*)malloc(len);
@@ -1414,12 +1430,17 @@ yyreduce:
         free(tekst);
         
       }
-#line 1418 "parser.tab.c"
+#line 1434 "parser.tab.c"
     break;
 
   case 17: /* condition: NOT_EMPTY LPAREN identifier RPAREN  */
-#line 237 "parser.y"
+#line 253 "parser.y"
                                         {
+
+        if (postoji((yyvsp[-1].CvorPokazivac)->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
+
         int len = strlen((yyvsp[-3].CvorPokazivac)->vrijednost) + strlen((yyvsp[-1].CvorPokazivac)->vrijednost)+ 4;
         char* tekst = (char*)malloc(len);
         snprintf(tekst, len, "%s(%s)", (yyvsp[-3].CvorPokazivac)->vrijednost, (yyvsp[-1].CvorPokazivac)->vrijednost);
@@ -1441,43 +1462,50 @@ yyreduce:
 
         free(tekst);
     }
-#line 1445 "parser.tab.c"
+#line 1466 "parser.tab.c"
     break;
 
   case 18: /* condition: URL_EXISTS LPAREN identifier COMMA STRING RPAREN  */
-#line 259 "parser.y"
+#line 280 "parser.y"
                                                       {
+
+        if (postoji((yyvsp[-3].CvorPokazivac)->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
 
         int len = strlen((yyvsp[-5].CvorPokazivac)->vrijednost) + strlen((yyvsp[-3].CvorPokazivac)->vrijednost)+ strlen((yyvsp[-1].CvorPokazivac)->vrijednost)+ 4;
         char* tekst = (char*)malloc(len);
         snprintf(tekst, len, "%s(%s,%s)", (yyvsp[-5].CvorPokazivac)->vrijednost, (yyvsp[-3].CvorPokazivac)->vrijednost, (yyvsp[-1].CvorPokazivac)->vrijednost);
         Cvor* temp = kreirajCvor(tekst);
-        
+
         (yyval.CvorPokazivac) = temp;
 
         free(tekst);
     }
-#line 1461 "parser.tab.c"
+#line 1486 "parser.tab.c"
     break;
 
   case 19: /* list_of_queries: LBRACKET query_list RBRACKET  */
-#line 273 "parser.y"
+#line 298 "parser.y"
                                 {
         (yyval.CvorPokazivac) = (yyvsp[-1].CvorPokazivac);
     }
-#line 1469 "parser.tab.c"
+#line 1494 "parser.tab.c"
     break;
 
   case 20: /* query_list: query_name  */
-#line 279 "parser.y"
+#line 304 "parser.y"
                 {
+        if (postoji((yyvsp[0].CvorPokazivac)->vrijednost) == -1) {
+            yyerror("Nedeklarisana varijabla");
+        }
         (yyval.CvorPokazivac) = kreirajCvor((yyvsp[0].CvorPokazivac)->vrijednost);
       }
-#line 1477 "parser.tab.c"
+#line 1505 "parser.tab.c"
     break;
 
   case 21: /* query_list: query_list COMMA query_name  */
-#line 282 "parser.y"
+#line 310 "parser.y"
                                  {
         
         int len = strlen((yyvsp[-2].CvorPokazivac)->vrijednost) + strlen((yyvsp[0].CvorPokazivac)->vrijednost) + 5;
@@ -1487,38 +1515,38 @@ yyreduce:
         (yyval.CvorPokazivac) = kreirajCvor(combined);
         free(combined);
     }
-#line 1491 "parser.tab.c"
+#line 1519 "parser.tab.c"
     break;
 
   case 22: /* query: LANGLE terms RANGLE  */
-#line 295 "parser.y"
+#line 323 "parser.y"
     {
         (yyval.CvorPokazivac) = (yyvsp[-1].CvorPokazivac);
     }
-#line 1499 "parser.tab.c"
+#line 1527 "parser.tab.c"
     break;
 
   case 23: /* query: query_name  */
-#line 299 "parser.y"
+#line 327 "parser.y"
     {
         if (postoji((yyvsp[0].CvorPokazivac)->vrijednost) == -1) {
             yyerror("Nedeklarisana varijabla");
         }
         (yyval.CvorPokazivac) = kreirajCvor((yyvsp[0].CvorPokazivac)->vrijednost);
     }
-#line 1510 "parser.tab.c"
+#line 1538 "parser.tab.c"
     break;
 
   case 24: /* terms: term  */
-#line 309 "parser.y"
+#line 337 "parser.y"
       {
           (yyval.CvorPokazivac) = kreirajCvor((yyvsp[0].CvorPokazivac)->vrijednost);
       }
-#line 1518 "parser.tab.c"
+#line 1546 "parser.tab.c"
     break;
 
   case 25: /* terms: terms term  */
-#line 312 "parser.y"
+#line 340 "parser.y"
                 {
 
         (yyval.CvorPokazivac) = kreirajCvor("Juxtaposition");
@@ -1526,48 +1554,48 @@ yyreduce:
         dodajSina((yyval.CvorPokazivac),(yyvsp[0].CvorPokazivac));
         
 }
-#line 1530 "parser.tab.c"
+#line 1558 "parser.tab.c"
     break;
 
   case 26: /* terms: terms OR terms  */
-#line 320 "parser.y"
+#line 348 "parser.y"
 {
         (yyval.CvorPokazivac) = kreirajCvor("Or");
         dodajSina((yyval.CvorPokazivac), (yyvsp[-2].CvorPokazivac));  
         dodajSina((yyval.CvorPokazivac), (yyvsp[0].CvorPokazivac));  
 }
-#line 1540 "parser.tab.c"
+#line 1568 "parser.tab.c"
     break;
 
   case 27: /* term: TERM  */
-#line 329 "parser.y"
+#line 357 "parser.y"
       {
           (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);
       }
-#line 1548 "parser.tab.c"
+#line 1576 "parser.tab.c"
     break;
 
   case 28: /* term: directive  */
-#line 333 "parser.y"
+#line 361 "parser.y"
       {
           (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);
       }
-#line 1556 "parser.tab.c"
+#line 1584 "parser.tab.c"
     break;
 
   case 29: /* term: operator term  */
-#line 337 "parser.y"
+#line 365 "parser.y"
       {
           int len = strlen((yyvsp[-1].CvorPokazivac)->vrijednost) + strlen((yyvsp[0].CvorPokazivac)->vrijednost) + 2;
           char* combined = (char*)malloc(len);
           snprintf(combined, len, "%s%s", (yyvsp[-1].CvorPokazivac)->vrijednost, (yyvsp[0].CvorPokazivac)->vrijednost);
           (yyval.CvorPokazivac) = kreirajCvor(combined);
       }
-#line 1567 "parser.tab.c"
+#line 1595 "parser.tab.c"
     break;
 
   case 30: /* directive: KEY COLON VALUE  */
-#line 347 "parser.y"
+#line 375 "parser.y"
     {
         int len = strlen("Directive") +  strlen((yyvsp[-2].CvorPokazivac)->vrijednost) + strlen((yyvsp[0].CvorPokazivac)->vrijednost) + 4;
         char* combined = (char*)malloc(len + 1);
@@ -1575,89 +1603,89 @@ yyreduce:
         (yyval.CvorPokazivac) = kreirajCvor(combined);
         free(combined);
     }
-#line 1579 "parser.tab.c"
+#line 1607 "parser.tab.c"
     break;
 
   case 31: /* operator: PLUS  */
-#line 359 "parser.y"
+#line 385 "parser.y"
                { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
-#line 1585 "parser.tab.c"
+#line 1613 "parser.tab.c"
     break;
 
   case 32: /* operator: MINUS  */
-#line 360 "parser.y"
+#line 386 "parser.y"
                { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
-#line 1591 "parser.tab.c"
+#line 1619 "parser.tab.c"
     break;
 
   case 33: /* operator: STAR  */
-#line 361 "parser.y"
+#line 387 "parser.y"
                { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
-#line 1597 "parser.tab.c"
+#line 1625 "parser.tab.c"
     break;
 
   case 34: /* set_operator: UNION  */
-#line 365 "parser.y"
+#line 391 "parser.y"
                     { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
-#line 1603 "parser.tab.c"
+#line 1631 "parser.tab.c"
     break;
 
   case 35: /* set_operator: DIFFERENCE  */
-#line 366 "parser.y"
+#line 392 "parser.y"
                     { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
-#line 1609 "parser.tab.c"
+#line 1637 "parser.tab.c"
     break;
 
   case 36: /* set_operator: INTERSECTION  */
-#line 367 "parser.y"
+#line 393 "parser.y"
                     { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac);}
-#line 1615 "parser.tab.c"
+#line 1643 "parser.tab.c"
     break;
 
   case 37: /* identifier: WORD  */
-#line 373 "parser.y"
+#line 399 "parser.y"
          { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
-#line 1621 "parser.tab.c"
+#line 1649 "parser.tab.c"
     break;
 
   case 38: /* query_name: WORD  */
-#line 377 "parser.y"
+#line 403 "parser.y"
          { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
-#line 1627 "parser.tab.c"
+#line 1655 "parser.tab.c"
     break;
 
   case 39: /* KEY: WORD  */
-#line 381 "parser.y"
+#line 407 "parser.y"
          { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
-#line 1633 "parser.tab.c"
+#line 1661 "parser.tab.c"
     break;
 
   case 40: /* VALUE: WORD  */
-#line 385 "parser.y"
+#line 411 "parser.y"
              { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
-#line 1639 "parser.tab.c"
+#line 1667 "parser.tab.c"
     break;
 
   case 41: /* VALUE: STRING  */
-#line 386 "parser.y"
+#line 412 "parser.y"
              { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
-#line 1645 "parser.tab.c"
+#line 1673 "parser.tab.c"
     break;
 
   case 42: /* TERM: WORD  */
-#line 390 "parser.y"
+#line 416 "parser.y"
              { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
-#line 1651 "parser.tab.c"
+#line 1679 "parser.tab.c"
     break;
 
   case 43: /* TERM: STRING  */
-#line 391 "parser.y"
+#line 417 "parser.y"
              { (yyval.CvorPokazivac) = (yyvsp[0].CvorPokazivac); }
-#line 1657 "parser.tab.c"
+#line 1685 "parser.tab.c"
     break;
 
 
-#line 1661 "parser.tab.c"
+#line 1689 "parser.tab.c"
 
       default: break;
     }
@@ -1850,11 +1878,13 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 394 "parser.y"
+#line 420 "parser.y"
 
 
 void yyerror(const char* msg) {
     fprintf(stderr, "Syntax error at line %d near '%s': %s\n", yylineno, yytext, msg);
+    exit(1);
+    
 }
 
 int postoji(char* id) {
@@ -1892,17 +1922,31 @@ void ispisi_tabelu() {
     }
 }
 
+void print_tree(Cvor* node, char *prefix, int is_last) {
+    printf("%s%s%s\n", prefix, is_last ? "└─ " : "├─ ", node->vrijednost);
+
+    char new_prefix[1024];
+    snprintf(new_prefix, sizeof(new_prefix), "%s%s", prefix, is_last ? "    " : "│   ");
+
+    for (int i = 0; i < node->broj_sinova; i++) {
+        print_tree(node->sinovi[i], new_prefix, i == node->broj_sinova - 1);
+    }
+}
+
 int main() {
+
+    
     korijen = kreirajCvor("Program");
     int res = yyparse();
     if (res == 0) {
         printf("Ulaz je ispravan\n");
-        ispisi_tabelu();
     } else {
         printf("Ulaz nije ispravan\n");
     }
 
-    int cnt = 0;
+    print_tree(korijen, "",1);
+
+    /*int cnt = 0;
 
     bool kraj = false;
 
@@ -1943,7 +1987,7 @@ int main() {
         }
     }
 
-    printf("\n");
+    printf("\n");*/
 
     return 0;
 }

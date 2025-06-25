@@ -1,7 +1,7 @@
 QUERY q = < book >;
 RESULT_OF_QUERY r;
 
-IF URL_EXISTS(r, "example.com") BEGIN
+IF EMPTY(r) BEGIN
     r = EXEC q;
 END
     
