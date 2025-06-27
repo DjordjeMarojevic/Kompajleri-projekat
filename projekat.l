@@ -51,6 +51,7 @@
 "]"                             { Cvor* t = (Cvor*) kreirajCvor("]"); yylval.CvorPokazivac = t; return RBRACKET; }
 "("                             { Cvor* t = (Cvor*) kreirajCvor("("); yylval.CvorPokazivac = t; return LPAREN; }
 ")"                             { Cvor* t = (Cvor*) kreirajCvor(")"); yylval.CvorPokazivac = t; return RPAREN; }
+"?"                             { Cvor* t = (Cvor*) kreirajCvor("?");  yylval.CvorPokazivac = t; return TO;}
 
 \"([^\"\\]|\\.)*\"              {
                                     Cvor* t = (Cvor*) kreirajCvor(yytext);  yylval.CvorPokazivac = t; 

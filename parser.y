@@ -37,8 +37,8 @@ int brPromjenljivih = 0;
 %token <CvorPokazivac> UNION DIFFERENCE INTERSECTION
 %token <CvorPokazivac> OR PLUS MINUS STAR
 %token <CvorPokazivac> ASSIGN SEMICOLON COMMA COLON
-%token <CvorPokazivac> LANGLE RANGLE LBRACKET RBRACKET LPAREN RPAREN
-%token <CvorPokazivac> UNKNOWN
+%token <CvorPokazivac> LANGLE RANGLE LBRACKET RBRACKET LPAREN RPAREN TO
+%token <CvorPokazivac> UNKNOWN 
 
 %type <CvorPokazivac> identifier query_name KEY VALUE TERM term terms query directive operator set_operator assign_command
 %type <CvorPokazivac> declarations commands declaration command query_list list_of_queries condition
@@ -49,6 +49,8 @@ int brPromjenljivih = 0;
 %left OR
 
 %%
+
+//if uslov ? komanda ako je tacno : ako nije tacno
 
 program:
     declarations commands
@@ -139,6 +141,22 @@ command:
             dodajSina($1,$4);
         }
 
+        $$ = $1;
+
+    }
+    | IF condition TO commands COLON commands{
+
+        
+
+        if($2 != NULL){
+            
+            dodajSina($1,$4);
+        }
+        else{
+            
+            dodajSina($1,$6);
+            
+        }
         $$ = $1;
 
     }

@@ -1,7 +1,6 @@
 QUERY q = < book >;
-RESULT_OF_QUERY r;
+QUERY p = < book >;
+RESULT_OF_QUERY s;
 
-IF EMPTY(r) BEGIN
-    r = EXEC q;
-END
-    
+
+IF EMPTY(q1) ? EXEC q; : EXEC p;

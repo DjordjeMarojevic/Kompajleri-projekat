@@ -84,7 +84,8 @@ extern int yydebug;
     RBRACKET = 285,                /* RBRACKET  */
     LPAREN = 286,                  /* LPAREN  */
     RPAREN = 287,                  /* RPAREN  */
-    UNKNOWN = 288                  /* UNKNOWN  */
+    TO = 288,                      /* TO  */
+    UNKNOWN = 289                  /* UNKNOWN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -97,7 +98,7 @@ union YYSTYPE
 
     struct Cvor* CvorPokazivac;
 
-#line 101 "parser.tab.h"
+#line 102 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
